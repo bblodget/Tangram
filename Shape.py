@@ -1,4 +1,5 @@
 import curses
+import copy
 
 class Shape(object):
 
@@ -94,13 +95,13 @@ class Shape(object):
         self._draw_bot(stdscr,y,x)
 
     def rotate_cw(self):
-        pass
-        #rot_shape = list(self.shape_table)
-        #for line in self.shape_table:
-        #    mask = 1 << (self.shape_dim-1)
-        #    for i in range(self.shape_dim):
-        #        if line & mask:
-        #            pass
+        rot_shape = copy.deepcopy(self.shape_table)
+        for y in range(self.shape_dim):
+            for x in range(self.shape_dim):
+                ry = x
+                rx = (self.shape_dim - 1) - y
+                rot_shape[ry][rx] = self.shape_table[y][x]
+        self.shape_table = rot_shape
 
 
 def main(stdscr):
@@ -133,12 +134,23 @@ def main(stdscr):
     shape2 = Shape([0x00,0x06,0x06,0x00], "square", '2')
     shape2.draw(stdscr, 5, 20)
 
+    shape3 = Shape([0x04,0x06,0x06,0x00], "six", '3')
+    shape3.draw(stdscr, 5, 35)
+
     while True:
 
 
         ch = stdscr.getch()
         if ch == ord('q'):
             return
+        elif ch == ord('r'):
+            shape1.rotate_cw()
+            shape2.rotate_cw()
+            shape3.rotate_cw()
+
+            shape1.draw(stdscr, 5, 5)
+            shape2.draw(stdscr, 5, 20)
+            shape3.draw(stdscr, 5, 35)
 
         curses.napms(100)
 
