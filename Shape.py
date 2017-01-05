@@ -2,16 +2,36 @@ import curses
 
 class Shape(object):
 
-    def __init__(self, shape_table, shape_name, shape_char):
-        """ The shape_table is a list of 5 numbers.
+    def __init__(self, shape_def, shape_name, shape_char):
+        """ The shape_def is a list of 5 numbers.
         Each number defines one line in the 5x5
         shape table matrix.  The base two representation
         of the number defines if a pixel is on or off.
         """
-        self.shape_table = list(shape_table)
-        self.shape_dim = len(shape_table)
+        self.shape_table = []
+        self.shape_dim = len(shape_def)
         self.shape_name = shape_name
         self.shape_char = shape_char
+
+        # Create shape_table from the shape_def.
+        # shape_table is a list of lists.
+        # The 1st dimension specifies the line (row).
+        # The 2nd dimension specifies the pixel in the line (column).
+        # (0,0) is the upper left corner.
+        # A value of 1 indicates the pixel is set.
+        # A value of 0 indicates the pixel is not set.
+        for line in shape_def:
+            line_list = []
+            mask = 0x01
+            for i in range(self.shape_dim):
+                if line & mask:
+                    line_list.append(1)
+                else:
+                    line_list.append(0)
+                line = line >> 1
+            line_list.reverse()
+            self.shape_table.append(line_list)
+
 
     def __str__(self):
         s = "shape_name: "+self.shape_name+"\n"
@@ -32,14 +52,12 @@ class Shape(object):
         line = self.shape_table[row]
         stdscr.move(y, x)
         stdscr.addch(curses.ACS_VLINE)
-        mask = 1 << (self.shape_dim-1)
-        for i in range(self.shape_dim):
-            if line & mask:
+        for pixel in line:
+            if pixel==1:
                 stdscr.addch(curses.ACS_CKBOARD)
             else:
                 stdscr.addch(' ')
             stdscr.addch(curses.ACS_VLINE)
-            line = line << 1
 
     def _draw_sep(self, stdscr, y, x):
         stdscr.move(y, x)
@@ -75,8 +93,14 @@ class Shape(object):
         y = y + 1
         self._draw_bot(stdscr,y,x)
 
-    def rotate(self):
+    def rotate_cw(self):
         pass
+        #rot_shape = list(self.shape_table)
+        #for line in self.shape_table:
+        #    mask = 1 << (self.shape_dim-1)
+        #    for i in range(self.shape_dim):
+        #        if line & mask:
+        #            pass
 
 
 def main(stdscr):
