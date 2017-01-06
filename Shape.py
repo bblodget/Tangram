@@ -103,6 +103,15 @@ class Shape(object):
                 rot_shape[ry][rx] = self.shape_table[y][x]
         self.shape_table = rot_shape
 
+    def reflect(self):
+        reflect_shape = copy.deepcopy(self.shape_table)
+        for y in range(self.shape_dim):
+            for x in range(self.shape_dim):
+                ry = y
+                rx = (self.shape_dim - 1) - x
+                reflect_shape[ry][rx] = self.shape_table[y][x]
+        self.shape_table = reflect_shape
+
 
 def main(stdscr):
 
@@ -137,6 +146,7 @@ def main(stdscr):
     shape3 = Shape([0x04,0x06,0x06,0x00], "six", '3')
     shape3.draw(stdscr, 5, 35)
 
+    trans = 0
     while True:
 
 
@@ -144,13 +154,25 @@ def main(stdscr):
         if ch == ord('q'):
             return
         elif ch == ord('r'):
-            shape1.rotate_cw()
-            shape2.rotate_cw()
-            shape3.rotate_cw()
+            if trans == 3:
+                shape1.rotate_cw()
+                shape2.rotate_cw()
+                shape3.rotate_cw()
+
+                shape1.reflect()
+                shape2.reflect()
+                shape3.reflect()
+                trans = 0
+            else:
+                shape1.rotate_cw()
+                shape2.rotate_cw()
+                shape3.rotate_cw()
+                trans = trans + 1 
 
             shape1.draw(stdscr, 5, 5)
             shape2.draw(stdscr, 5, 20)
             shape3.draw(stdscr, 5, 35)
+
 
         curses.napms(100)
 
