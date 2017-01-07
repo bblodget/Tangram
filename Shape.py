@@ -43,18 +43,16 @@ class Shape(object):
 
         # Check the 4 non reflective rotations
         for i in range(4):
-            next_trans = self._rotate_cw(trans)
-            if not self._already_in_transformation(next_trans):
-                self.transformation.append(next_trans)
-            trans = next_trans
+            if not self._already_in_transformation(trans):
+                self.transformation.append(trans)
+            trans = self._rotate_cw(trans)
 
         # Check the 4 reflective rotations
         trans = self._reflect(self.shape_table)
         for i in range(4):
-            next_trans = self._rotate_cw(trans)
-            if not self._already_in_transformation(next_trans):
-                self.transformation.append(next_trans)
-            trans = next_trans
+            if not self._already_in_transformation(trans):
+                self.transformation.append(trans)
+            trans = self._rotate_cw(trans)
 
     def _already_in_transformation(self,test_trans):
         # Test every transformation in the transformation list
