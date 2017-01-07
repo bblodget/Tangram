@@ -10,9 +10,11 @@ class Shape(object):
         of the number defines if a pixel is on or off.
         """
         self.shape_table = []
+        self.transformation = []
         self.shape_dim = len(shape_def)
         self.shape_name = shape_name
         self.shape_char = shape_char
+        self.transform_num = 0
 
         # Create shape_table from the shape_def.
         # shape_table is a list of lists.
@@ -33,6 +35,41 @@ class Shape(object):
             line_list.reverse()
             self.shape_table.append(line_list)
 
+        # Initialize the transformation list
+        self._init_transformation()
+
+    def _init_transformation(self):
+        trans = self.shape_table
+
+        # Check the 4 non reflective rotations
+        for i in range(4):
+            next_trans = self._rotate_cw(trans)
+            if not self._already_in_transformation(next_trans):
+                self.transformation.append(next_trans)
+            trans = next_trans
+
+        # Check the 4 reflective rotations
+        trans = self._reflect(self.shape_table)
+        for i in range(4):
+            next_trans = self._rotate_cw(trans)
+            if not self._already_in_transformation(next_trans):
+                self.transformation.append(next_trans)
+            trans = next_trans
+
+    def _already_in_transformation(self,test_trans):
+        # Test every transformation in the transformation list
+        for trans in self.transformation:
+            match = True
+            # Tests every line of trans against test_trans
+            # If not equal then unique
+            for y in range(len(trans)):
+                if trans[y] != test_trans[y]:
+                    match = False
+            if match:
+                return True
+
+        return False
+                
 
     def __str__(self):
         s = "shape_name: "+self.shape_name+"\n"
@@ -50,7 +87,7 @@ class Shape(object):
                 stdscr.addch(curses.ACS_URCORNER)
 
     def _draw_row(self, stdscr, y, x, row):
-        line = self.shape_table[row]
+        line = self.transformation[self.transform_num][row]
         stdscr.move(y, x)
         stdscr.addch(curses.ACS_VLINE)
         for pixel in line:
@@ -81,6 +118,10 @@ class Shape(object):
                 stdscr.addch(curses.ACS_LRCORNER)
 
     def draw(self, stdscr, y, x):
+        stdscr.move(y, x)
+        stdscr.addstr(str(self.transform_num))
+        y = y + 1
+
         self._draw_top(stdscr,y,x)
         y = y + 1
 
@@ -94,23 +135,29 @@ class Shape(object):
         y = y + 1
         self._draw_bot(stdscr,y,x)
 
-    def rotate_cw(self):
-        rot_shape = copy.deepcopy(self.shape_table)
-        for y in range(self.shape_dim):
-            for x in range(self.shape_dim):
+    def _rotate_cw(self, shape):
+        rot_shape = copy.deepcopy(shape)
+        dim = len(shape)
+        for y in range(dim):
+            for x in range(dim):
                 ry = x
-                rx = (self.shape_dim - 1) - y
-                rot_shape[ry][rx] = self.shape_table[y][x]
-        self.shape_table = rot_shape
+                rx = (dim - 1) - y
+                rot_shape[ry][rx] = shape[y][x]
+        return rot_shape
 
-    def reflect(self):
-        reflect_shape = copy.deepcopy(self.shape_table)
-        for y in range(self.shape_dim):
-            for x in range(self.shape_dim):
+    def _reflect(self, shape):
+        reflect_shape = copy.deepcopy(shape)
+        dim = len(shape)
+        for y in range(dim):
+            for x in range(dim):
                 ry = y
-                rx = (self.shape_dim - 1) - x
-                reflect_shape[ry][rx] = self.shape_table[y][x]
-        self.shape_table = reflect_shape
+                rx = (dim - 1) - x
+                reflect_shape[ry][rx] = shape[y][x]
+        return reflect_shape
+
+    def next_transform(self):
+        self.transform_num = (self.transform_num+1) % len(self.transformation)
+
 
 
 def main(stdscr):
@@ -154,20 +201,9 @@ def main(stdscr):
         if ch == ord('q'):
             return
         elif ch == ord('r'):
-            if trans == 3:
-                shape1.rotate_cw()
-                shape2.rotate_cw()
-                shape3.rotate_cw()
-
-                shape1.reflect()
-                shape2.reflect()
-                shape3.reflect()
-                trans = 0
-            else:
-                shape1.rotate_cw()
-                shape2.rotate_cw()
-                shape3.rotate_cw()
-                trans = trans + 1 
+            shape1.next_transform()
+            shape2.next_transform()
+            shape3.next_transform()
 
             shape1.draw(stdscr, 5, 5)
             shape2.draw(stdscr, 5, 20)
