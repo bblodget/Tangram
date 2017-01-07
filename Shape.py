@@ -57,15 +57,20 @@ class Shape(object):
     def _already_in_transformation(self,test_trans):
         # Test every transformation in the transformation list
         for trans in self.transformation:
+            # To start assume test_trans is same as trans
             match = True
-            # Tests every line of trans against test_trans
-            # If not equal then unique
             for y in range(len(trans)):
+                # Test each line, if not eq then set match False
                 if trans[y] != test_trans[y]:
                     match = False
+            # If match is true then trans==test_trans
+            # So test_trans is already in transformation
+            # so return True
             if match:
                 return True
 
+        # Did not find a match to test_trans in the
+        # transformation list, so return False
         return False
                 
 
@@ -185,7 +190,7 @@ def main(stdscr):
     shape1 = Shape([0x04,0x04,0x04,0x04,0x04], "line", '1')
     shape1.draw(stdscr, 5, 5)
 
-    shape2 = Shape([0x00,0x06,0x06,0x00], "square", '2')
+    shape2 = Shape([0x03,0x03], "square", '2')
     shape2.draw(stdscr, 5, 20)
 
     shape3 = Shape([0x04,0x06,0x06,0x00], "six", '3')
